@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useModel } from './useModel.js'
-import { Colorizer, applyAdjustments, DEFAULT_VIVIDNESS } from './colorize.js'
+import { Colorizer, applyAdjustments } from './colorize.js'
 import BeforeAfter from './BeforeAfter.jsx'
 
 // Model load states surfaced to the user. The fetch-and-cache layer
@@ -90,11 +90,9 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [adj, setAdj] = useState(DEFAULT_ADJ)
-  const [vividness, setVividness] = useState(DEFAULT_VIVIDNESS)
   const pendingImageData = useRef(null)
   // Raw colorize output kept so the sliders re-render instantly (no re-infer).
-  // logits let the Vividness slider recompute ab without re-running the model.
-  const resultRef = useRef(null) // { lab, logits }
+  const resultRef = useRef(null) // { lab, abFull }
 
   const ready = READY.has(status)
   const failed = status === 'error' || status === 'offline-unavailable'
@@ -118,7 +116,6 @@ export default function App() {
     setResultURL(null)
     resultRef.current = null
     setAdj(DEFAULT_ADJ)
-    setVividness(DEFAULT_VIVIDNESS)
     const imageData = await fileToImageData(file)
     pendingImageData.current = imageData
     setSourceURL(imageDataToDataURL(imageData))
@@ -134,11 +131,8 @@ export default function App() {
         setBusy(false)
         return
       }
-      const { imageData, lab, logits } = await c.colorize(
-        pendingImageData.current,
-        vividness,
-      )
-      resultRef.current = { lab, logits }
+      const { imageData, lab, abFull } = await c.colorize(pendingImageData.current)
+      resultRef.current = { lab, abFull }
       setAdj(DEFAULT_ADJ)
       setResultURL(imageDataToDataURL(imageData))
     } catch (err) {
@@ -146,50 +140,26 @@ export default function App() {
     } finally {
       setBusy(false)
     }
-  }, [ensureColorizer, vividness])
+  }, [ensureColorizer])
 
-  // Render the result from current vividness + post adjustments. Vividness
-  // recomputes ab from stored logits (cheap, no model run); adjustments then
-  // tweak that. Both are instant.
-  const render = useCallback((nextVivid, nextAdj) => {
+  // Re-apply adjustments instantly from the stored Lab + ab planes (no infer).
+  const updateAdj = useCallback((next) => {
+    setAdj(next)
     const r = resultRef.current
-    const c = colorizerRef.current
-    if (!r || !c) return
-    const abFull = c.deriveAb(r.lab, r.logits, nextVivid)
-    const imageData = applyAdjustments(r.lab, abFull, nextAdj)
+    if (!r) return
+    const imageData = applyAdjustments(r.lab, r.abFull, next)
     setResultURL(imageDataToDataURL(imageData))
   }, [])
-
-  const updateAdj = useCallback(
-    (next) => {
-      setAdj(next)
-      render(vividness, next)
-    },
-    [render, vividness],
-  )
-
-  const updateVividness = useCallback(
-    (v) => {
-      setVividness(v)
-      render(v, adj)
-    },
-    [render, adj],
-  )
 
   const isDefault = useMemo(
     () =>
       adj.saturation === DEFAULT_ADJ.saturation &&
       adj.temperature === DEFAULT_ADJ.temperature &&
-      adj.strength === DEFAULT_ADJ.strength &&
-      vividness === DEFAULT_VIVIDNESS,
-    [adj, vividness],
+      adj.strength === DEFAULT_ADJ.strength,
+    [adj],
   )
 
-  const resetAll = useCallback(() => {
-    setAdj(DEFAULT_ADJ)
-    setVividness(DEFAULT_VIVIDNESS)
-    render(DEFAULT_VIVIDNESS, DEFAULT_ADJ)
-  }, [render])
+  const resetAll = useCallback(() => updateAdj(DEFAULT_ADJ), [updateAdj])
 
   return (
     <div className="app">
@@ -198,7 +168,7 @@ export default function App() {
           <ModelStatus status={status} progress={progress} />
           {status === 'not-downloaded' && (
             <button className="btn" onClick={load}>
-              Download model (~123 MB, one time)
+              Download model (~108 MB, one time)
             </button>
           )}
           {failed && (
@@ -248,15 +218,6 @@ export default function App() {
 
             {hasResult && (
               <div className="controls">
-                <Slider
-                  label="Vividness"
-                  value={vividness}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onChange={updateVividness}
-                  format={(v) => `${Math.round(v * 100)}%`}
-                />
                 <Slider
                   label="Saturation"
                   value={adj.saturation}
@@ -308,7 +269,7 @@ export default function App() {
       <footer className="app__footer">
         <span>100% offline after first load</span>
         <span>·</span>
-        <span>Model: ECCV16 (Zhang et al.) · BSD-3</span>
+        <span>Model: DDColor (Kang et al.)</span>
       </footer>
     </div>
   )

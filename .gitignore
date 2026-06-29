@@ -15,3 +15,6 @@ public/models/*.onnx
 # ORT Web WASM artifacts are copied from node_modules at build time
 # (scripts/copy-ort.mjs); regenerated, not committed.
 public/ort/
+
+# Model split-transfer files (xaa..) — not part of the app.
+xa[a-z]
