@@ -1,0 +1,24 @@
+{
+  "name": "colorize",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Fully offline, in-browser photo colorizer (ECCV16 + ONNX Runtime Web)",
+  "scripts": {
+    "copy-ort": "node scripts/copy-ort.mjs",
+    "gen-sw": "node scripts/gen-sw.mjs",
+    "dev": "npm run copy-ort && vite",
+    "build": "npm run copy-ort && vite build && npm run gen-sw",
+    "deploy": "npm run build && node scripts/deploy-root.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "onnxruntime-web": "1.20.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.3.4",
+    "vite": "5.4.11"
+  }
+}

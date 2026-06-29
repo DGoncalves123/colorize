@@ -1,0 +1,347 @@
+:root {
+  --bg: #0f1115;
+  --panel: #181b22;
+  --text: #e6e8ee;
+  --muted: #9aa0ac;
+  --accent: #4c8bf5;
+  --ok: #3fb950;
+  --warn: #d29922;
+  --err: #f85149;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Avoid the iOS "tap highlight" flash and accidental text selection on
+   the interactive image/slider controls. */
+button,
+.btn,
+.ba {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.app {
+  max-width: 980px;
+  margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  gap: 20px;
+}
+
+.app__header h1 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.app__tagline {
+  margin: 4px 0 12px;
+  color: var(--muted);
+}
+
+.app__main {
+  flex: 1;
+}
+
+.app__footer {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 13px;
+  border-top: 1px solid #262b35;
+  padding-top: 12px;
+}
+
+/* Model load status pill */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid #262b35;
+  font-size: 13px;
+}
+
+.status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.status--ready .status__dot {
+  background: var(--ok);
+}
+.status--downloading .status__dot {
+  background: var(--accent);
+}
+.status--not-downloaded .status__dot,
+.status--offline-unavailable .status__dot {
+  background: var(--warn);
+}
+.status--error .status__dot {
+  background: var(--err);
+}
+
+.app__statusrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid #2c323d;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  filter: brightness(1.08);
+}
+
+.btn--retry {
+  background: transparent;
+  color: var(--text);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.toolbar .btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--err);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.compare figure {
+  margin: 0;
+}
+
+.compare img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.compare figcaption {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.compare__empty {
+  display: grid;
+  place-content: center;
+  aspect-ratio: 4 / 3;
+  border: 1px dashed #2c323d;
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 12px;
+}
+
+@media (max-width: 640px) {
+  .compare {
+    grid-template-columns: 1fr;
+  }
+
+  .app {
+    padding: 16px 14px;
+  }
+
+  /* Bigger tap targets + stack controls full width on phones. */
+  .btn {
+    padding: 10px 16px;
+  }
+
+  .toolbar {
+    gap: 8px;
+  }
+
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  /* Range thumbs are larger and easier to grab on touch. */
+  .ctrl input[type='range'] {
+    height: 28px;
+  }
+}
+
+/* Workspace: before/after slider + controls */
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ba {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+  cursor: ew-resize;
+  background: var(--panel);
+}
+
+.ba__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ba__after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* The after image must match the container's rendered width so the two
+   layers stay pixel-aligned regardless of the divider position. */
+.ba__img--after {
+  width: var(--ba-width, 640px);
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ba__divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fff;
+  transform: translateX(-1px);
+  pointer-events: none;
+}
+
+.ba__handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.ba__label {
+  position: absolute;
+  top: 8px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  pointer-events: none;
+}
+
+.ba__label--left {
+  left: 8px;
+}
+.ba__label--right {
+  right: 8px;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  align-items: end;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.ctrl {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ctrl__label {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ctrl__value {
+  color: var(--text);
+}
+
+.ctrl input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.placeholder {
+  display: grid;
+  place-content: center;
+  text-align: center;
+  min-height: 320px;
+  border: 1px dashed #2c323d;
+  border-radius: 14px;
+  background: var(--panel);
+}
+
+.placeholder__hint {
+  color: var(--muted);
+  font-size: 13px;
+}

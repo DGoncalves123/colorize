@@ -1,0 +1,5 @@
+# Conversion environment + large model artifacts are NOT committed.
+# The browser fetches the model from its remote host at runtime (see README).
+.venv/
+*.onnx
+__pycache__/

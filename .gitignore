@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+.vite/
+.deployed-manifest
+
+# Stray cache dir that the controlled-browser tooling can drop into the repo.
+${local_app_data}*
+
+# Local dev model (served from public/models/ during development).
+# The production model is fetched from its remote host at runtime.
+public/models/*.onnx
+
+# ORT Web WASM artifacts are copied from node_modules at build time
+# (scripts/copy-ort.mjs); regenerated, not committed.
+public/ort/
