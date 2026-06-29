@@ -16,7 +16,13 @@ import { fileURLToPath } from 'node:url'
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = join(root, 'dist')
 const BASE = '/colorize/'
-const MODEL_CACHE = 'colorize-model-v2' // keep in sync with src/config.js
+// Read MODEL_CACHE straight from src/config.js so the two can never drift.
+const MODEL_CACHE = (() => {
+  const cfg = readFileSync(join(root, 'src', 'config.js'), 'utf8')
+  const m = cfg.match(/MODEL_CACHE\s*=\s*['"]([^'"]+)['"]/)
+  if (!m) throw new Error('gen-sw: could not find MODEL_CACHE in src/config.js')
+  return m[1]
+})()
 
 // Walk dist/, collecting shell files. Exclude the model and the SW itself.
 function walk(dir, acc = []) {
